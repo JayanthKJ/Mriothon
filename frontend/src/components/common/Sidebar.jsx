@@ -18,7 +18,7 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { role, logout } = useAuth();
+  const { user, role, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -73,12 +73,12 @@ export default function Sidebar({ isOpen, onClose }) {
         {/* Sidebar Header */}
         <div className="p-3 border-bottom border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
           <div className="d-flex align-items-center gap-2">
-            <div className="p-2 bg-primary rounded text-white">
+            <div className="p-2 rounded d-flex align-items-center justify-content-center" style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
               <HardHat size={20} />
             </div>
             <div>
               <h6 className="mb-0 fw-bold text-white" style={{ fontSize: '0.95rem' }}>MMA Portal</h6>
-              <span className="text-secondary small" style={{ fontSize: '0.72rem' }}>Manual Assistant</span>
+              <span className="text-muted small" style={{ fontSize: '0.72rem' }}>Manual Assistant</span>
             </div>
           </div>
           <button
@@ -109,8 +109,8 @@ export default function Sidebar({ isOpen, onClose }) {
                     className={({ isActive }) =>
                       `nav-link d-flex align-items-center gap-2 px-3 py-2 rounded-2 ${
                         isActive
-                          ? 'active bg-primary text-white'
-                          : 'text-light text-opacity-75 hover-bg-dark'
+                          ? 'active'
+                          : ''
                       }`
                     }
                     style={({ isActive }) => ({
@@ -127,11 +127,36 @@ export default function Sidebar({ isOpen, onClose }) {
           </ul>
         </div>
 
-        {/* Sidebar Footer */}
-        <div className="p-3 border-top border-secondary border-opacity-25 bg-black bg-opacity-20 text-secondary small">
+        {/* Sidebar Footer with User Profile */}
+        <div className="p-3 border-top border-secondary border-opacity-25 bg-black bg-opacity-30 text-secondary small">
+          {user && (
+            <div className="d-flex align-items-center gap-2 mb-3 p-2 rounded" style={{ backgroundColor: 'rgba(255, 255, 255, 0.03)', border: '1px solid #282a30' }}>
+              <div
+                className="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                style={{
+                  width: 34,
+                  height: 34,
+                  backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                  color: '#f59e0b',
+                  fontSize: '0.82rem',
+                  border: '1px solid rgba(245, 158, 11, 0.3)'
+                }}
+              >
+                {user.first_name ? user.first_name[0].toUpperCase() : (role ? role[0].toUpperCase() : 'U')}
+              </div>
+              <div className="overflow-hidden lh-sm">
+                <div className="text-white small fw-semibold text-truncate" style={{ fontSize: '0.84rem' }}>
+                  {user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : (user.username || 'Operator')}
+                </div>
+                <div className="text-muted text-uppercase" style={{ fontSize: '0.66rem', letterSpacing: '0.04em' }}>
+                  {normalizedRole}
+                </div>
+              </div>
+            </div>
+          )}
           <div className="d-flex align-items-center justify-content-between mb-2">
-            <span className="badge bg-secondary text-white" style={{ fontSize: '0.65rem' }}>v1.0.0</span>
-            <span style={{ fontSize: '0.72rem' }}>Gemini RAG Architecture</span>
+            <span className="badge bg-dark border text-muted" style={{ fontSize: '0.65rem' }}>v1.0.0</span>
+            <span className="text-muted" style={{ fontSize: '0.7rem' }}>Gemini RAG • pgvector</span>
           </div>
           <button
             type="button"

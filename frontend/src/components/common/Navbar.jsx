@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Menu, LogOut, Shield, Wrench, Eye, Cpu, User, ChevronDown } from 'lucide-react';
+import { Menu, LogOut, Shield, Wrench, Eye, Cpu, User, ChevronDown, Bell } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function Navbar({ onToggleSidebar }) {
@@ -49,19 +49,43 @@ export default function Navbar({ onToggleSidebar }) {
     switch (role?.toLowerCase()) {
       case 'admin':
         return (
-          <span className="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 d-flex align-items-center gap-1">
+          <span
+            className="badge d-flex align-items-center gap-1"
+            style={{
+              backgroundColor: 'rgba(239, 68, 68, 0.14)',
+              color: '#f87171',
+              border: '1px solid #7f1d1d',
+              fontSize: '0.75rem'
+            }}
+          >
             <Shield size={12} /> Admin
           </span>
         );
       case 'engineer':
         return (
-          <span className="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 d-flex align-items-center gap-1">
+          <span
+            className="badge d-flex align-items-center gap-1"
+            style={{
+              backgroundColor: 'rgba(245, 158, 11, 0.14)',
+              color: '#fbbf24',
+              border: '1px solid #78350f',
+              fontSize: '0.75rem'
+            }}
+          >
             <Wrench size={12} /> Engineer
           </span>
         );
       case 'supervisor':
         return (
-          <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 d-flex align-items-center gap-1">
+          <span
+            className="badge d-flex align-items-center gap-1"
+            style={{
+              backgroundColor: 'rgba(34, 197, 94, 0.14)',
+              color: '#4ade80',
+              border: '1px solid #166534',
+              fontSize: '0.75rem'
+            }}
+          >
             <Eye size={12} /> Supervisor
           </span>
         );
@@ -90,9 +114,9 @@ export default function Navbar({ onToggleSidebar }) {
           </button>
 
           <div className="d-none d-sm-flex align-items-center gap-2">
-            <Cpu size={20} className="text-primary" />
-            <span className="fw-bold text-dark tracking-wide">Plant Ops</span>
-            <span className="text-muted small">| Industrial Intelligence</span>
+            <Cpu size={20} style={{ color: '#f59e0b' }} />
+            <span className="fw-bold text-white tracking-wide">Plant Ops</span>
+            <span className="text-muted small" style={{ fontSize: '0.75rem' }}>| Industrial Intelligence</span>
           </div>
         </div>
 
@@ -109,6 +133,20 @@ export default function Navbar({ onToggleSidebar }) {
 
           {getRoleBadge()}
 
+          {/* Notification Alert Bell (Matches Reference Console) */}
+          <button
+            type="button"
+            className="btn btn-sm btn-link text-muted p-1 position-relative d-flex align-items-center"
+            title="System Telemetry Notifications"
+            aria-label="System Notifications"
+          >
+            <Bell size={18} />
+            <span
+              className="position-absolute top-0 end-0 translate-middle-y p-1 rounded-circle"
+              style={{ width: 7, height: 7, backgroundColor: '#f59e0b' }}
+            />
+          </button>
+
           {/* User Profile Section at Top-Right Corner */}
           <div className="position-relative border-start ps-3" ref={dropdownRef}>
             <button
@@ -119,23 +157,30 @@ export default function Navbar({ onToggleSidebar }) {
               aria-label="User Profile Menu"
               style={{ color: 'inherit' }}
             >
-              {/* Profile Avatar with Icon / Initials */}
+              {/* Profile Avatar with Warm Amber Contrast */}
               <div
-                className="rounded-circle bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                style={{ width: 38, height: 38, fontSize: '0.85rem' }}
+                className="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
+                style={{
+                  width: 36,
+                  height: 36,
+                  fontSize: '0.85rem',
+                  backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                  color: '#f59e0b',
+                  border: '1px solid rgba(245, 158, 11, 0.3)'
+                }}
               >
                 {initials}
               </div>
 
               {/* User Identity Details (First Name, Last Name, Gmail, Role) */}
               <div className="d-none d-sm-block text-end lh-sm">
-                <div className="fw-semibold small text-dark">{fullName}</div>
+                <div className="fw-semibold small text-white">{fullName}</div>
                 <div className="text-muted" style={{ fontSize: '0.72rem' }}>
                   {gmailAddress}
                 </div>
                 <div
-                  className="text-primary fw-semibold text-uppercase"
-                  style={{ fontSize: '0.64rem', letterSpacing: '0.04em' }}
+                  className="fw-semibold text-uppercase"
+                  style={{ fontSize: '0.64rem', letterSpacing: '0.04em', color: '#f59e0b' }}
                 >
                   {displayRole}
                 </div>
@@ -152,7 +197,10 @@ export default function Navbar({ onToggleSidebar }) {
               >
                 {/* Header with Full Name and Gmail Address */}
                 <div className="d-flex align-items-center gap-2 pb-2 mb-2 border-bottom">
-                  <div className="p-2 rounded-circle bg-primary text-white flex-shrink-0">
+                  <div
+                    className="p-2 rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center"
+                    style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)' }}
+                  >
                     <User size={16} />
                   </div>
                   <div className="overflow-hidden">

@@ -230,7 +230,14 @@ export default function LoginPage() {
       <div className="card-body p-4 p-sm-5">
         {/* Branding */}
         <div className="text-center mb-4">
-          <div className="d-inline-flex p-3 rounded-3 bg-primary text-white mb-2 shadow-sm">
+          <div
+            className="d-inline-flex p-3 rounded-3 mb-2 shadow-sm"
+            style={{
+              backgroundColor: 'rgba(245, 158, 11, 0.15)',
+              color: '#f59e0b',
+              border: '1px solid rgba(245, 158, 11, 0.3)'
+            }}
+          >
             <HardHat size={32} />
           </div>
           <h4 className="fw-bold text-dark mb-1">Manufacturing Manual Assistant</h4>
@@ -238,12 +245,16 @@ export default function LoginPage() {
         </div>
 
         {/* Tab Selection: Existing User Login vs New User Registration */}
-        <div className="d-flex p-1 bg-light rounded-3 mb-4 border">
+        <div className="d-flex p-1 rounded-3 mb-4 border" style={{ backgroundColor: 'var(--bg-input)' }}>
           <button
             type="button"
-            className={`btn btn-sm flex-grow-1 fw-semibold py-2 d-flex align-items-center justify-content-center gap-1 ${
-              authMode === 'login' ? 'btn-white bg-white shadow-sm text-primary' : 'text-secondary'
-            }`}
+            className="btn btn-sm flex-grow-1 fw-semibold py-2 d-flex align-items-center justify-content-center gap-1"
+            style={{
+              backgroundColor: authMode === 'login' ? 'rgba(245, 158, 11, 0.15)' : 'transparent',
+              color: authMode === 'login' ? '#f59e0b' : 'var(--text-muted)',
+              border: authMode === 'login' ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid transparent',
+              borderRadius: '6px'
+            }}
             onClick={() => {
               setAuthMode('login');
               setError('');
@@ -255,9 +266,13 @@ export default function LoginPage() {
           </button>
           <button
             type="button"
-            className={`btn btn-sm flex-grow-1 fw-semibold py-2 d-flex align-items-center justify-content-center gap-1 ${
-              authMode === 'register' ? 'btn-white bg-white shadow-sm text-primary' : 'text-secondary'
-            }`}
+            className="btn btn-sm flex-grow-1 fw-semibold py-2 d-flex align-items-center justify-content-center gap-1"
+            style={{
+              backgroundColor: authMode === 'register' ? 'rgba(245, 158, 11, 0.15)' : 'transparent',
+              color: authMode === 'register' ? '#f59e0b' : 'var(--text-muted)',
+              border: authMode === 'register' ? '1px solid rgba(245, 158, 11, 0.3)' : '1px solid transparent',
+              borderRadius: '6px'
+            }}
             onClick={() => {
               setAuthMode('register');
               setError('');

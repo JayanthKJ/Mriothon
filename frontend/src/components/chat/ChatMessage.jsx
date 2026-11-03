@@ -25,7 +25,7 @@ export default function ChatMessage({ message, machineName, onOpenPdf }) {
       <div className="d-flex justify-content-end align-items-start gap-2 mb-3">
         <div className="chat-bubble-user">
           <div className="d-flex align-items-center justify-content-between gap-3 mb-1">
-            <span className="badge bg-white text-dark small" style={{ fontSize: '0.68rem' }}>
+            <span className="badge small" style={{ fontSize: '0.68rem', backgroundColor: 'rgba(245, 158, 11, 0.25)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.4)' }}>
               {machineName || 'Machine'}
             </span>
             {created_at && (
@@ -38,7 +38,10 @@ export default function ChatMessage({ message, machineName, onOpenPdf }) {
             {content || question}
           </div>
         </div>
-        <div className="p-2 rounded-circle bg-primary text-white flex-shrink-0">
+        <div
+          className="p-2 rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center"
+          style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)' }}
+        >
           <User size={16} />
         </div>
       </div>
@@ -69,7 +72,7 @@ export default function ChatMessage({ message, machineName, onOpenPdf }) {
         <div className="d-flex justify-content-end align-items-start gap-2">
           <div className="chat-bubble-user">
             <div className="d-flex align-items-center justify-content-between gap-3 mb-1">
-              <span className="badge bg-white text-dark small" style={{ fontSize: '0.68rem' }}>
+              <span className="badge small" style={{ fontSize: '0.68rem', backgroundColor: 'rgba(245, 158, 11, 0.25)', color: '#fbbf24', border: '1px solid rgba(245, 158, 11, 0.4)' }}>
                 {machineName || 'Machine'}
               </span>
               {created_at && (
@@ -90,7 +93,10 @@ export default function ChatMessage({ message, machineName, onOpenPdf }) {
 
       {/* Assistant Response Bubble */}
       <div className="d-flex justify-content-start align-items-start gap-2">
-        <div className="p-2 rounded-circle bg-dark text-white flex-shrink-0">
+        <div
+          className="p-2 rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', color: '#f59e0b', border: '1px solid #2e3036' }}
+        >
           <Bot size={16} />
         </div>
         <div className="chat-bubble-assistant">

@@ -27,7 +27,7 @@ function RootRedirect() {
 
   if (isLoading) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
+      <div className="d-flex justify-content-center align-items-center vh-100" style={{ backgroundColor: 'var(--bg-app)' }}>
         <LoadingSpinner text="Checking authentication status..." size="lg" />
       </div>
     );

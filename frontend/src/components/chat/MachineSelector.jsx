@@ -13,7 +13,10 @@ export default function MachineSelector({
     <div className="card card-industrial p-3 bg-white mb-3">
       <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
         <div className="d-flex align-items-center gap-2">
-          <div className="p-2 rounded bg-primary bg-opacity-10 text-primary">
+          <div
+            className="p-2 rounded d-flex align-items-center justify-content-center"
+            style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)' }}
+          >
             <Cpu size={22} />
           </div>
           <div>
@@ -44,7 +47,10 @@ export default function MachineSelector({
           </select>
 
           {currentMachine && (
-            <span className="badge bg-light text-secondary border d-none d-lg-inline-block small">
+            <span
+              className="badge border d-none d-lg-inline-block small"
+              style={{ backgroundColor: 'rgba(34, 197, 94, 0.12)', color: '#4ade80', borderColor: '#166534' }}
+            >
               {currentMachine.manuals_count || 0} Manuals Indexed
             </span>
           )}

@@ -4,7 +4,7 @@ import { CheckCircle2, AlertOctagon, Clock, XCircle, CheckCheck, Edit3 } from 'l
 /**
  * InspectionStatusBadge
  * Formats prediction classes, processing statuses, and supervisor review states
- * with professional industrial styling.
+ * with industrial dark theme styling matching the visual reference console.
  */
 export default function InspectionStatusBadge({ type = 'class', value }) {
   if (!value) return null;
@@ -18,9 +18,9 @@ export default function InspectionStatusBadge({ type = 'class', value }) {
         <span
           className="badge d-inline-flex align-items-center gap-1 px-2 py-1"
           style={{
-            backgroundColor: '#dcfce7',
-            color: '#15803d',
-            border: '1px solid #bbf7d0',
+            backgroundColor: 'rgba(34, 197, 94, 0.15)',
+            color: '#4ade80',
+            border: '1px solid #166534',
             fontWeight: 600,
             fontSize: '0.78rem'
           }}
@@ -35,9 +35,9 @@ export default function InspectionStatusBadge({ type = 'class', value }) {
         <span
           className="badge d-inline-flex align-items-center gap-1 px-2 py-1"
           style={{
-            backgroundColor: '#fee2e2',
-            color: '#b91c1c',
-            border: '1px solid #fecaca',
+            backgroundColor: 'rgba(239, 68, 68, 0.15)',
+            color: '#f87171',
+            border: '1px solid #7f1d1d',
             fontWeight: 600,
             fontSize: '0.78rem'
           }}
@@ -47,7 +47,7 @@ export default function InspectionStatusBadge({ type = 'class', value }) {
         </span>
       );
     }
-    return <span className="badge bg-light text-dark border">{value}</span>;
+    return <span className="badge bg-light text-muted border">{value}</span>;
   }
 
   // 2. Processing Status: Queued, Processing, Completed, Failed
@@ -57,10 +57,11 @@ export default function InspectionStatusBadge({ type = 'class', value }) {
         <span
           className="badge d-inline-flex align-items-center gap-1 px-2 py-1"
           style={{
-            backgroundColor: '#dcfce7',
-            color: '#15803d',
-            border: '1px solid #bbf7d0',
-            fontSize: '0.75rem'
+            backgroundColor: 'rgba(34, 197, 94, 0.15)',
+            color: '#4ade80',
+            border: '1px solid #166534',
+            fontSize: '0.75rem',
+            fontWeight: 500
           }}
         >
           <CheckCircle2 size={12} strokeWidth={2.5} />
@@ -73,10 +74,11 @@ export default function InspectionStatusBadge({ type = 'class', value }) {
         <span
           className="badge d-inline-flex align-items-center gap-1 px-2 py-1"
           style={{
-            backgroundColor: '#fef3c7',
-            color: '#b45309',
-            border: '1px solid #fde68a',
-            fontSize: '0.75rem'
+            backgroundColor: 'rgba(245, 158, 11, 0.15)',
+            color: '#fbbf24',
+            border: '1px solid #78350f',
+            fontSize: '0.75rem',
+            fontWeight: 500
           }}
         >
           <span className="spinner-border spinner-border-sm" style={{ width: 10, height: 10 }} />
@@ -89,10 +91,11 @@ export default function InspectionStatusBadge({ type = 'class', value }) {
         <span
           className="badge d-inline-flex align-items-center gap-1 px-2 py-1"
           style={{
-            backgroundColor: '#e0f2fe',
-            color: '#0369a1',
-            border: '1px solid #bae6fd',
-            fontSize: '0.75rem'
+            backgroundColor: 'rgba(56, 189, 248, 0.15)',
+            color: '#7dd3fc',
+            border: '1px solid #0369a1',
+            fontSize: '0.75rem',
+            fontWeight: 500
           }}
         >
           <Clock size={12} strokeWidth={2.5} />
@@ -105,10 +108,11 @@ export default function InspectionStatusBadge({ type = 'class', value }) {
         <span
           className="badge d-inline-flex align-items-center gap-1 px-2 py-1"
           style={{
-            backgroundColor: '#fee2e2',
-            color: '#b91c1c',
-            border: '1px solid #fecaca',
-            fontSize: '0.75rem'
+            backgroundColor: 'rgba(239, 68, 68, 0.15)',
+            color: '#f87171',
+            border: '1px solid #7f1d1d',
+            fontSize: '0.75rem',
+            fontWeight: 500
           }}
         >
           <XCircle size={12} strokeWidth={2.5} />
@@ -116,7 +120,7 @@ export default function InspectionStatusBadge({ type = 'class', value }) {
         </span>
       );
     }
-    return <span className="badge bg-light text-dark border">{value}</span>;
+    return <span className="badge bg-light text-muted border">{value}</span>;
   }
 
   // 3. Supervisor Review Status: pending, confirmed, corrected
@@ -126,10 +130,11 @@ export default function InspectionStatusBadge({ type = 'class', value }) {
         <span
           className="badge d-inline-flex align-items-center gap-1 px-2 py-1"
           style={{
-            backgroundColor: '#eff6ff',
-            color: '#1d4ed8',
-            border: '1px solid #bfdbfe',
-            fontSize: '0.75rem'
+            backgroundColor: 'rgba(56, 189, 248, 0.15)',
+            color: '#7dd3fc',
+            border: '1px solid #0369a1',
+            fontSize: '0.75rem',
+            fontWeight: 500
           }}
         >
           <CheckCheck size={12} strokeWidth={2.5} />
@@ -142,10 +147,11 @@ export default function InspectionStatusBadge({ type = 'class', value }) {
         <span
           className="badge d-inline-flex align-items-center gap-1 px-2 py-1"
           style={{
-            backgroundColor: '#fdf4ff',
-            color: '#86198f',
-            border: '1px solid #f5d0fe',
-            fontSize: '0.75rem'
+            backgroundColor: 'rgba(217, 70, 239, 0.15)',
+            color: '#e879f9',
+            border: '1px solid #86198f',
+            fontSize: '0.75rem',
+            fontWeight: 500
           }}
         >
           <Edit3 size={12} strokeWidth={2.5} />
@@ -156,8 +162,14 @@ export default function InspectionStatusBadge({ type = 'class', value }) {
     // Default or pending
     return (
       <span
-        className="badge d-inline-flex align-items-center gap-1 px-2 py-1 text-secondary border bg-light"
-        style={{ fontSize: '0.75rem' }}
+        className="badge d-inline-flex align-items-center gap-1 px-2 py-1"
+        style={{
+          backgroundColor: 'rgba(245, 158, 11, 0.15)',
+          color: '#fbbf24',
+          border: '1px solid #78350f',
+          fontSize: '0.75rem',
+          fontWeight: 500
+        }}
       >
         <Clock size={12} />
         <span>Pending Review</span>
@@ -165,5 +177,5 @@ export default function InspectionStatusBadge({ type = 'class', value }) {
     );
   }
 
-  return <span className="badge bg-light text-dark border">{value}</span>;
+  return <span className="badge bg-light text-muted border">{value}</span>;
 }

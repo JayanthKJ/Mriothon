@@ -277,13 +277,16 @@ export default function EngineerDashboard() {
       <div className="card card-industrial p-3 bg-white mb-3">
         <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
           <div className="d-flex align-items-center gap-3">
-            <div className="p-2 rounded bg-primary bg-opacity-10 text-primary">
+            <div
+              className="p-2 rounded d-flex align-items-center justify-content-center"
+              style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.3)' }}
+            >
               <Scan size={22} />
             </div>
             <div>
               <div className="d-flex align-items-center gap-2">
-                <h6 className="fw-bold text-dark mb-0">AI Visual Quality Inspection</h6>
-                <span className="badge bg-primary text-white" style={{ fontSize: '0.68rem' }}>MODULE B</span>
+                <h6 className="fw-bold text-white mb-0">AI Visual Quality Inspection</h6>
+                <span className="badge" style={{ fontSize: '0.68rem', backgroundColor: '#f59e0b', color: '#0d0e11', fontWeight: 600 }}>MODULE B</span>
               </div>
               <p className="text-muted small mb-0" style={{ fontSize: '0.78rem' }}>
                 Automated surface defect classification using model <strong>BIT-PLATE-CV-1.0</strong>.
@@ -388,16 +391,18 @@ export default function EngineerDashboard() {
                     <div
                       key={conv.id}
                       onClick={() => loadConversation(conv.id)}
-                      className={`p-2 mb-2 rounded border text-start cursor-pointer transition-all d-flex align-items-start justify-content-between gap-2 ${isActive
-                          ? 'bg-primary bg-opacity-10 border-primary text-primary shadow-sm'
-                          : 'bg-light bg-opacity-50 border-light-subtle text-dark hover-shadow'
-                        }`}
-                      style={{ cursor: 'pointer' }}
+                      className="p-2 mb-2 rounded border text-start cursor-pointer transition-all d-flex align-items-start justify-content-between gap-2"
+                      style={{
+                        cursor: 'pointer',
+                        backgroundColor: isActive ? 'rgba(245, 158, 11, 0.12)' : 'var(--bg-surface-elevated)',
+                        borderColor: isActive ? 'rgba(245, 158, 11, 0.45)' : 'var(--border-color)',
+                        color: isActive ? '#f59e0b' : 'var(--text-main)'
+                      }}
                     >
                       <div className="overflow-hidden flex-grow-1">
                         <div className="d-flex align-items-center gap-1 mb-1">
                           <span
-                            className="badge bg-secondary bg-opacity-10 text-secondary border font-monospace"
+                            className="badge bg-dark border text-muted font-monospace"
                             style={{ fontSize: '0.65rem' }}
                           >
                             {conv.machine_code || 'OEM'}
@@ -407,7 +412,7 @@ export default function EngineerDashboard() {
                           </span>
                         </div>
                         <div
-                          className={`fw-medium text-truncate small ${isActive ? 'text-primary' : 'text-dark'}`}
+                          className={`fw-medium text-truncate small ${isActive ? 'text-warning' : 'text-white'}`}
                           style={{ fontSize: '0.82rem' }}
                           title={conv.title}
                         >
