@@ -17,6 +17,7 @@ class DocumentListSerializer(serializers.ModelSerializer):
     machine_code = serializers.CharField(source='machine.machine_code', read_only=True)
     machine_name = serializers.CharField(source='machine.name', read_only=True)
     indexing_status = serializers.SerializerMethodField()
+    is_indexed = serializers.SerializerMethodField()
 
     class Meta:
         model = Document
@@ -32,6 +33,7 @@ class DocumentListSerializer(serializers.ModelSerializer):
             'page_count',
             'status',
             'indexing_status',
+            'is_indexed',
             'created_at',
             'updated_at',
             'is_active',
@@ -41,6 +43,10 @@ class DocumentListSerializer(serializers.ModelSerializer):
     def get_indexing_status(self, obj):
         index = getattr(obj, 'index_record', None)
         return index.status if index else 'PENDING'
+
+    def get_is_indexed(self, obj) -> bool:
+        from documents.services import is_document_rag_indexed
+        return is_document_rag_indexed(obj)
 
 
 class DocumentDetailSerializer(serializers.ModelSerializer):

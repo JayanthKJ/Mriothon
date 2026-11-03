@@ -213,3 +213,45 @@ def get_accessible_documents_queryset(user, machine_id=None):
         qs = qs.filter(machine_id=machine_id)
 
     return qs.select_related('machine', 'uploaded_by')
+
+
+def is_document_rag_indexed(document: Document) -> bool:
+    """
+    Authoritative evaluation of whether a technical manual document is genuinely
+    indexed and eligible for RAG vector retrieval in the active vector backend.
+
+    Conditions:
+    1. Document is active (is_active=True).
+    2. Document extraction completed successfully (status='READY').
+    3. Target machine is active (machine.is_active=True and machine.status='ACTIVE').
+    4. DocumentIndex record exists and is in READY state (index_record.status='READY').
+    5. Document has chunks persisted in PostgreSQL.
+    6. All persisted chunks have valid, non-null vector embeddings in the active backend.
+    """
+    if not document or not document.is_active:
+        return False
+
+    if document.status != DocumentStatus.READY:
+        return False
+
+    machine = getattr(document, 'machine', None)
+    if not machine or getattr(machine, 'status', None) != 'ACTIVE' or not getattr(machine, 'is_active', True):
+        return False
+
+    index_record = getattr(document, 'index_record', None)
+    if not index_record or index_record.status != 'READY':
+        return False
+
+    from rag.models import DocumentChunk
+    chunks = DocumentChunk.objects.filter(document=document)
+    if not chunks.exists():
+        return False
+
+    from django.conf import settings
+    backend = getattr(settings, 'VECTOR_BACKEND', 'pgvector')
+    if backend == 'pgvector':
+        valid_vector_chunks = chunks.filter(embedding__isnull=False)
+        return valid_vector_chunks.count() == chunks.count() and valid_vector_chunks.count() > 0
+    else:
+        valid_chroma_chunks = chunks.exclude(chroma_vector_id='')
+        return valid_chroma_chunks.count() == chunks.count() and valid_chroma_chunks.count() > 0

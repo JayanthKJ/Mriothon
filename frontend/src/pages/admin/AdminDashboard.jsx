@@ -13,6 +13,7 @@ export default function AdminDashboard() {
   const [machines, setMachines] = useState([]);
   const [documents, setDocuments] = useState([]);
   const [products, setProducts] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -24,10 +25,11 @@ export default function AdminDashboard() {
         const results = await Promise.allSettled([
           machineService.getMachines(),
           documentService.getDocuments(),
-          inspectionService.getProducts()
+          inspectionService.getProducts(),
+          documentService.getDocumentSummary()
         ]);
 
-        const [mRes, dRes, pRes] = results;
+        const [mRes, dRes, pRes, sRes] = results;
 
         if (mRes.status === 'fulfilled') {
           setMachines(Array.isArray(mRes.value) ? mRes.value : (mRes.value?.results || []));
@@ -47,6 +49,12 @@ export default function AdminDashboard() {
           console.warn('Products failed to load:', pRes.reason);
         }
 
+        if (sRes.status === 'fulfilled') {
+          setSummary(sRes.value);
+        } else {
+          console.warn('Document summary failed to load:', sRes.reason);
+        }
+
         const failed = results.filter((r) => r.status === 'rejected');
         if (failed.length === results.length) {
           setErrorMessage(getErrorMessage(failed[0]?.reason, 'Unable to load administration data from backend.'));
@@ -62,20 +70,30 @@ export default function AdminDashboard() {
     fetchData();
   }, []);
 
-  // Poll for document status updates if any document is in non-terminal state (Uploaded or Processing)
+  // Poll for document status updates if any document is in non-terminal state (Uploaded, Processing, Pending)
   useEffect(() => {
     const hasPending = documents.some((d) => {
+      if (d.is_active === false) return false;
       const s = d.status?.toLowerCase();
-      return s === 'uploaded' || s === 'processing';
+      const idxS = d.indexing_status?.toLowerCase();
+      return s === 'uploaded' || s === 'processing' || idxS === 'pending' || idxS === 'processing';
     });
 
     if (!hasPending) return;
 
     const timer = setInterval(async () => {
       try {
-        const updated = await documentService.getDocuments();
-        const docList = Array.isArray(updated) ? updated : (updated?.results || []);
-        setDocuments(docList);
+        const [updated, sum] = await Promise.allSettled([
+          documentService.getDocuments(),
+          documentService.getDocumentSummary()
+        ]);
+        if (updated.status === 'fulfilled') {
+          const docList = Array.isArray(updated.value) ? updated.value : (updated.value?.results || []);
+          setDocuments(docList);
+        }
+        if (sum.status === 'fulfilled') {
+          setSummary(sum.value);
+        }
       } catch (e) {
         console.warn('Status polling error:', e);
       }
@@ -88,8 +106,17 @@ export default function AdminDashboard() {
     return <LoadingSpinner text="Loading admin telemetry and equipment catalogs..." size="lg" />;
   }
 
-  const indexedCount = documents.filter((d) => d.status?.toLowerCase() === 'indexed').length;
-  const processingCount = documents.filter((d) => d.status?.toLowerCase() === 'processing').length;
+  const activeDocuments = documents.filter((d) => d.is_active !== false);
+  const uploadedCount = summary?.total_manuals ?? activeDocuments.length;
+  const indexedCount = summary?.indexed_manuals ?? activeDocuments.filter((d) =>
+    Boolean(d.is_indexed === true || (d.status?.toUpperCase() === 'READY' && d.indexing_status?.toUpperCase() === 'READY'))
+  ).length;
+  const processingCount = summary?.processing_queue ?? activeDocuments.filter((d) => {
+    const isDocProcessing = d.status?.toUpperCase() === 'PROCESSING' || d.status?.toUpperCase() === 'UPLOADED';
+    const isIndexProcessing = d.indexing_status?.toUpperCase() === 'PROCESSING' || d.indexing_status?.toUpperCase() === 'PENDING';
+    const isAlreadyIndexed = Boolean(d.is_indexed === true || (d.status?.toUpperCase() === 'READY' && d.indexing_status?.toUpperCase() === 'READY'));
+    return (isDocProcessing || isIndexProcessing) && !isAlreadyIndexed;
+  }).length;
 
   return (
     <div className="container-fluid p-0">
@@ -150,7 +177,7 @@ export default function AdminDashboard() {
                 <FileText size={18} />
               </div>
             </div>
-            <h3 className="fw-bold text-dark mb-1">{documents.length}</h3>
+            <h3 className="fw-bold text-dark mb-1">{uploadedCount}</h3>
             <span className="text-muted small">PDF documents registered</span>
           </div>
         </div>

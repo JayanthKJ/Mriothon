@@ -141,12 +141,13 @@ export default function ImageUploader({
           height: v.height
         }));
 
-        setPreviewItems((prev) => {
-          const updated = [...prev, ...newItems].slice(0, maxFiles);
-          previewItemsRef.current = updated;
+        const current = previewItemsRef.current;
+        const updated = [...current, ...newItems].slice(0, maxFiles);
+        previewItemsRef.current = updated;
+        setPreviewItems(updated);
+        if (onChange) {
           onChange(updated.map((item) => item.file), updated);
-          return updated;
-        });
+        }
       }
     } else {
       // SINGLE FILE MODE (Preserve exact single-image functionality)
@@ -229,23 +230,26 @@ export default function ImageUploader({
   };
 
   const handleRemoveItem = (index) => {
-    setPreviewItems((prev) => {
-      const itemToRemove = prev[index];
-      if (itemToRemove?.previewUrl) {
-        URL.revokeObjectURL(itemToRemove.previewUrl);
-      }
-      const updated = prev.filter((_, i) => i !== index);
-      previewItemsRef.current = updated;
+    const current = previewItemsRef.current;
+    const itemToRemove = current[index];
+    if (itemToRemove?.previewUrl) {
+      URL.revokeObjectURL(itemToRemove.previewUrl);
+    }
+    const updated = current.filter((_, i) => i !== index);
+    previewItemsRef.current = updated;
+    setPreviewItems(updated);
 
-      if (multiple) {
+    if (multiple) {
+      if (onChange) {
         onChange(updated.map((u) => u.file), updated);
-        if (updated.length === 0) setValidationError(null);
-      } else {
-        onChange(null, null);
-        setValidationError(null);
       }
-      return updated;
-    });
+      if (updated.length === 0) setValidationError(null);
+    } else {
+      if (onChange) {
+        onChange(null, null);
+      }
+      setValidationError(null);
+    }
   };
 
   const handleReplaceSingle = () => {

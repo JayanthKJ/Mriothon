@@ -35,10 +35,62 @@ export default function BatchInspectionPage() {
 
   const pollingRef = useRef(null);
 
+  const stopPolling = () => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+  };
+
+  const startPolling = (targetBatchId) => {
+    stopPolling();
+
+    const poll = async () => {
+      try {
+        const updated = await inspectionService.getBatchStatus(targetBatchId);
+        if (Array.isArray(updated?.items) && updated.items.length > 0) {
+          setBatchItems((prev) =>
+            prev.map((item, i) => {
+              const matched = updated.items.find(
+                (m) => (item.id && m.id === item.id) || m.file_name === item.file_name
+              ) || updated.items[i];
+              if (!matched) return item;
+              return {
+                ...item,
+                id: matched.id || item.id,
+                status: matched.status || item.status,
+                predicted_class: matched.predicted_class || matched.prediction || item.predicted_class,
+                confidence: matched.confidence !== undefined ? matched.confidence : item.confidence,
+                error: matched.failure_reason || matched.error || item.error
+              };
+            })
+          );
+        }
+
+        const isTerminal =
+          updated?.status === 'Completed' ||
+          updated?.status === 'Failed' ||
+          (updated?.completed_count !== undefined &&
+            updated?.failed_count !== undefined &&
+            updated.completed_count + updated.failed_count >= (updated.total_images || updated.total));
+
+        if (isTerminal) {
+          stopPolling();
+          setIsProcessing(false);
+        }
+      } catch (err) {
+        console.warn('Batch polling error:', err);
+      }
+    };
+
+    pollingRef.current = setInterval(poll, 1500);
+    setTimeout(poll, 800);
+  };
+
   // Clean up polling interval on unmount
   useEffect(() => {
     return () => {
-      if (pollingRef.current) clearInterval(pollingRef.current);
+      stopPolling();
     };
   }, []);
 
@@ -101,8 +153,9 @@ export default function BatchInspectionPage() {
     try {
       // 1. Attempt dedicated backend batch inspection endpoint
       const batchResponse = await inspectionService.createBatchInspection(formData);
-      if (batchResponse?.batch_id) {
-        setBatchId(batchResponse.batch_id);
+      const newBatchId = batchResponse?.batch_id;
+      if (newBatchId) {
+        setBatchId(newBatchId);
       }
 
       if (Array.isArray(batchResponse?.items) && batchResponse.items.length > 0) {
@@ -112,13 +165,24 @@ export default function BatchInspectionPage() {
           return {
             ...item,
             id: matched.id || item.id,
-            status: matched.status || 'Completed',
+            status: matched.status || 'Queued',
             predicted_class: matched.predicted_class || matched.prediction,
             confidence: matched.confidence,
-            error: matched.error || null
+            error: matched.failure_reason || matched.error || null
           };
         });
         setBatchItems(updatedItems);
+      }
+
+      const allTerminal = batchResponse?.items?.every(
+        (it) => it.status === 'Completed' || it.status === 'Failed'
+      );
+      if (allTerminal) {
+        setIsProcessing(false);
+      } else if (newBatchId) {
+        startPolling(newBatchId);
+      } else {
+        setIsProcessing(false);
       }
     } catch (batchErr) {
       // If batch endpoint (/api/inspections/batch/) returns 404, process each valid file individually
@@ -141,7 +205,6 @@ export default function BatchInspectionPage() {
           }))
         );
       }
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -192,14 +255,17 @@ export default function BatchInspectionPage() {
       if (Array.isArray(updated?.items)) {
         setBatchItems((prev) =>
           prev.map((item, i) => {
-            const matched = updated.items[i];
+            const matched = updated.items.find(
+              (m) => (item.id && m.id === item.id) || m.file_name === item.file_name
+            ) || updated.items[i];
             if (!matched) return item;
             return {
               ...item,
+              id: matched.id || item.id,
               status: matched.status || item.status,
-              predicted_class: matched.predicted_class || item.predicted_class,
-              confidence: matched.confidence || item.confidence,
-              error: matched.error || item.error
+              predicted_class: matched.predicted_class || matched.prediction || item.predicted_class,
+              confidence: matched.confidence !== undefined ? matched.confidence : item.confidence,
+              error: matched.failure_reason || matched.error || item.error
             };
           })
         );
@@ -212,10 +278,12 @@ export default function BatchInspectionPage() {
   };
 
   const handleResetBatch = () => {
+    stopPolling();
     setSelectedFiles([]);
     setFilePreviews([]);
     setBatchItems([]);
     setBatchId(null);
+    setIsProcessing(false);
     setErrorMessage(null);
   };
 

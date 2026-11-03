@@ -642,3 +642,156 @@ class DocumentViewerAndStreamingTestCase(BaseDocumentTestCase):
         res = self.client.get(f'/api/documents/{self.doc_assigned.id}/pdf/', HTTP_RANGE='bytes=999999-')
         self.assertEqual(res.status_code, status.HTTP_416_REQUESTED_RANGE_NOT_SATISFIABLE)
         self.assertEqual(res['Content-Range'], f'bytes */{len(self.pdf_bytes)}')
+
+
+class DocumentRAGIndexedTestCase(BaseDocumentTestCase):
+    """
+    Test suite for RAG indexing eligibility, DocumentListSerializer is_indexed field,
+    and GET /api/documents/summary/ endpoint.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.doc_active = Document.objects.create(
+            machine=self.machine1,
+            title='CNC Operations Manual',
+            original_filename='cnc_ops.pdf',
+            file_size=1024,
+            status=DocumentStatus.READY,
+            uploaded_by=self.admin,
+            is_active=True,
+            checksum='test-checksum-001'
+        )
+        self.page1 = DocumentPage.objects.create(
+            document=self.doc_active,
+            page_number=1,
+            text='Page 1 content'
+        )
+
+    def test_is_document_rag_indexed_positive(self):
+        from documents.services import is_document_rag_indexed
+        from rag.models import DocumentIndex, DocumentChunk, IndexingStatus
+
+        DocumentIndex.objects.create(
+            document=self.doc_active,
+            status=IndexingStatus.READY,
+            chunk_count=1
+        )
+        DocumentChunk.objects.create(
+            document=self.doc_active,
+            page=self.page1,
+            chunk_index=0,
+            text='Chunk 0 text',
+            embedding=[0.01] * 768
+        )
+        self.assertTrue(is_document_rag_indexed(self.doc_active))
+
+    def test_is_document_rag_indexed_negative_missing_chunks(self):
+        from documents.services import is_document_rag_indexed
+        from rag.models import DocumentIndex, IndexingStatus
+
+        DocumentIndex.objects.create(
+            document=self.doc_active,
+            status=IndexingStatus.READY,
+            chunk_count=0
+        )
+        self.assertFalse(is_document_rag_indexed(self.doc_active))
+
+    def test_is_document_rag_indexed_negative_null_embedding(self):
+        from documents.services import is_document_rag_indexed
+        from rag.models import DocumentIndex, DocumentChunk, IndexingStatus
+
+        DocumentIndex.objects.create(
+            document=self.doc_active,
+            status=IndexingStatus.READY,
+            chunk_count=1
+        )
+        DocumentChunk.objects.create(
+            document=self.doc_active,
+            page=self.page1,
+            chunk_index=0,
+            text='Chunk 0 text',
+            embedding=None
+        )
+        self.assertFalse(is_document_rag_indexed(self.doc_active))
+
+    def test_is_document_rag_indexed_negative_inactive_doc(self):
+        from documents.services import is_document_rag_indexed
+        from rag.models import DocumentIndex, DocumentChunk, IndexingStatus
+
+        DocumentIndex.objects.create(
+            document=self.doc_active,
+            status=IndexingStatus.READY,
+            chunk_count=1
+        )
+        DocumentChunk.objects.create(
+            document=self.doc_active,
+            page=self.page1,
+            chunk_index=0,
+            text='Chunk 0 text',
+            embedding=[0.01] * 768
+        )
+        self.doc_active.is_active = False
+        self.doc_active.save()
+        self.assertFalse(is_document_rag_indexed(self.doc_active))
+
+    def test_document_list_serializer_is_indexed(self):
+        from documents.serializers import DocumentListSerializer
+        from rag.models import DocumentIndex, DocumentChunk, IndexingStatus
+
+        DocumentIndex.objects.create(
+            document=self.doc_active,
+            status=IndexingStatus.READY,
+            chunk_count=1
+        )
+        DocumentChunk.objects.create(
+            document=self.doc_active,
+            page=self.page1,
+            chunk_index=0,
+            text='Chunk 0 text',
+            embedding=[0.01] * 768
+        )
+
+        serializer = DocumentListSerializer(self.doc_active)
+        self.assertIn('is_indexed', serializer.data)
+        self.assertTrue(serializer.data['is_indexed'])
+        self.assertEqual(serializer.data['indexing_status'], 'READY')
+
+    def test_documents_summary_endpoint(self):
+        from rag.models import DocumentIndex, DocumentChunk, IndexingStatus
+
+        DocumentIndex.objects.create(
+            document=self.doc_active,
+            status=IndexingStatus.READY,
+            chunk_count=1
+        )
+        DocumentChunk.objects.create(
+            document=self.doc_active,
+            page=self.page1,
+            chunk_index=0,
+            text='Chunk 0 text',
+            embedding=[0.01] * 768
+        )
+
+        doc_proc = Document.objects.create(
+            machine=self.machine1,
+            title='CNC Maintenance Manual',
+            original_filename='cnc_maint.pdf',
+            file_size=2048,
+            status=DocumentStatus.PROCESSING,
+            uploaded_by=self.admin,
+            is_active=True,
+            checksum='test-checksum-002'
+        )
+
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.admin_token}')
+        res = self.client.get('/api/documents/summary/')
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertEqual(data['total_manuals'], 2)
+        self.assertEqual(data['indexed_manuals'], 1)
+        self.assertEqual(data['processing_queue'], 1)
+
+    def test_documents_summary_unauthenticated(self):
+        res = self.client.get('/api/documents/summary/')
+        self.assertEqual(res.status_code, 401)

@@ -423,7 +423,12 @@ class BatchInspectionView(APIView):
 
         # Enqueue background Celery tasks AFTER the batch record is saved to prevent race conditions
         for record_id in records_to_enqueue:
-            process_inspection_task.delay(record_id)
+            try:
+                process_inspection_task.delay(record_id)
+            except Exception as queue_err:
+                import logging
+                logging.getLogger(__name__).warning('Celery enqueue failed for record #%s: %s. Executing inline.', record_id, queue_err)
+                process_inspection_task(record_id)
 
         return Response({
             'batch_id': batch_id,

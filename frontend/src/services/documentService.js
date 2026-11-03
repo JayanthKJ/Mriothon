@@ -29,6 +29,26 @@ export const documentService = {
   },
 
   /**
+   * Fetch aggregate summary of manuals (total, indexed, processing queue)
+   */
+  async getDocumentSummary() {
+    try {
+      const response = await apiClient.get('/documents/summary/');
+      return response.data;
+    } catch (err) {
+      const isNetworkError = !err.response || err.code === 'ERR_NETWORK';
+      if (USE_MOCK_FALLBACK && isNetworkError) {
+        return {
+          total_manuals: mockDocumentsState.length,
+          indexed_manuals: mockDocumentsState.filter((d) => d.status === 'READY').length,
+          processing_queue: mockDocumentsState.filter((d) => d.status === 'PROCESSING' || d.status === 'UPLOADED').length
+        };
+      }
+      throw err;
+    }
+  },
+
+  /**
    * Fetch single document by ID
    */
   async getDocumentById(docId) {

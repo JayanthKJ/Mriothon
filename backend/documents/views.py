@@ -11,6 +11,8 @@ import re
 from django.http import FileResponse, Http404, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from django.db import models
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
@@ -73,6 +75,34 @@ class DocumentViewSet(viewsets.ModelViewSet):
         document.refresh_from_db()
         detail_serializer = DocumentDetailSerializer(document)
         return Response(detail_serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def summary(self, request):
+        """
+        GET /api/documents/summary/
+        Returns authoritative counts for technical manuals dashboard telemetry:
+        - total_manuals: registered active documents
+        - indexed_manuals: manuals genuinely indexed and eligible for RAG retrieval
+        - processing_queue: manuals currently in extraction or vector indexing
+        """
+        from documents.services import is_document_rag_indexed
+        user_docs = self.get_queryset().filter(is_active=True)
+
+        total_count = user_docs.count()
+        indexed_count = sum(1 for d in user_docs if is_document_rag_indexed(d))
+
+        processing_count = user_docs.filter(
+            models.Q(status__in=[DocumentStatus.UPLOADED, DocumentStatus.PROCESSING]) |
+            models.Q(index_record__status__in=['PENDING', 'PROCESSING'])
+        ).exclude(
+            id__in=[d.id for d in user_docs if is_document_rag_indexed(d)]
+        ).count()
+
+        return Response({
+            'total_manuals': total_count,
+            'indexed_manuals': indexed_count,
+            'processing_queue': processing_count,
+        }, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
         """
